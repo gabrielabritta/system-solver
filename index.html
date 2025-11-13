@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Circuit Solver Pocket</title>
+        <link
+            rel="preconnect"
+            href="https://fonts.googleapis.com"
+            crossorigin
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                color-scheme: dark;
+                --bg: #05060a;
+                --card: #0e111a;
+                --card-soft: #111827;
+                --accent: #00f5d4;
+                --accent-strong: #00bfa6;
+                --muted: #94a3b8;
+                --text: #f8fafc;
+                --danger: #fb7185;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                background: radial-gradient(
+                    circle at top,
+                    #111b38,
+                    #04050b 55%
+                );
+                font-family:
+                    "Space Grotesk",
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                color: var(--text);
+                display: flex;
+                justify-content: center;
+                padding: 32px 18px 64px;
+            }
+
+            main {
+                width: min(640px, 100%);
+                display: flex;
+                flex-direction: column;
+                gap: 18px;
+            }
+
+            .hero {
+                padding: 24px 22px;
+                border-radius: 24px;
+                background: linear-gradient(135deg, #111b38, #080b14 60%);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+            }
+
+            .hero h1 {
+                margin: 0;
+                font-size: clamp(1.8rem, 4vw, 2.4rem);
+                letter-spacing: -0.5px;
+            }
+
+            .hero p {
+                margin: 10px 0 18px;
+                color: var(--muted);
+                line-height: 1.4;
+            }
+
+            .badge {
+                display: inline-flex;
+                padding: 6px 16px;
+                border-radius: 999px;
+                background: rgba(0, 245, 212, 0.12);
+                color: var(--accent);
+                font-weight: 500;
+                font-size: 0.9rem;
+            }
+
+            .card {
+                background: var(--card);
+                border-radius: 20px;
+                padding: 18px 20px;
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            }
+
+            .card h2 {
+                margin: 0 0 14px;
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+
+            .controls {
+                display: grid;
+                gap: 12px;
+            }
+
+            label {
+                font-size: 0.92rem;
+                color: var(--muted);
+            }
+
+            input[type="number"],
+            select {
+                width: 100%;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                background: var(--card-soft);
+                color: var(--text);
+                font-size: 1rem;
+                border-radius: 12px;
+                padding: 12px 14px;
+                font-family: inherit;
+            }
+
+            input[type="number"]:focus,
+            select:focus,
+            .grid input:focus {
+                outline: 2px solid rgba(0, 245, 212, 0.35);
+                border-color: transparent;
+            }
+
+            button {
+                border: none;
+                border-radius: 14px;
+                padding: 12px 16px;
+                font-size: 1rem;
+                font-weight: 600;
+                font-family: inherit;
+                cursor: pointer;
+                transition:
+                    transform 0.15s ease,
+                    box-shadow 0.15s ease;
+            }
+
+            .btn-accent {
+                background: linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-strong)
+                );
+                color: #041015;
+                box-shadow: 0 16px 30px rgba(0, 191, 166, 0.35);
+            }
+
+            .btn-ghost {
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--text);
+            }
+
+            button:active {
+                transform: translateY(1px);
+            }
+
+            .grid {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .matrix-row {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)) 90px;
+                gap: 8px;
+            }
+
+            .grid input {
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                background: var(--card-soft);
+                color: var(--text);
+                padding: 10px;
+                font-size: 0.94rem;
+            }
+
+            .actions {
+                display: grid;
+                gap: 12px;
+            }
+
+            .switch {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.92rem;
+                color: var(--muted);
+            }
+
+            .switch input {
+                accent-color: var(--accent);
+            }
+
+            .status {
+                padding: 10px 14px;
+                border-radius: 12px;
+                font-size: 0.92rem;
+                margin-bottom: 12px;
+                background: rgba(15, 118, 110, 0.15);
+                color: var(--accent);
+            }
+
+            textarea {
+                width: 100%;
+                min-height: 140px;
+                border-radius: 14px;
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                background: var(--card-soft);
+                color: var(--text);
+                padding: 14px;
+                font-size: 0.95rem;
+                font-family: "JetBrains Mono", "Space Grotesk", monospace;
+                resize: vertical;
+            }
+
+            .out-actions {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 10px;
+                margin-top: 12px;
+            }
+
+            .floating-bar {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                padding: 16px;
+                background: linear-gradient(
+                    0deg,
+                    rgba(5, 6, 10, 0.95),
+                    transparent
+                );
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+            }
+
+            .floating-bar button {
+                flex: 1;
+            }
+
+            @media (min-width: 720px) {
+                body {
+                    padding-bottom: 32px;
+                }
+                .floating-bar {
+                    position: static;
+                    background: transparent;
+                    padding: 0;
+                }
+                .floating-bar {
+                    justify-content: center;
+                }
+                .floating-bar button {
+                    flex: 0 0 auto;
+                    width: auto;
+                    min-width: 160px;
+                }
+                .actions {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+                .actions select {
+                    grid-column: span 2;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <section class="hero">
+                <h1>Circuit Solver Pocket ⚡</h1>
+                <p>
+                    Monte sistemas lineares complexos direto do celular, resolva
+                    instantaneamente e exporte os resultados prontos para
+                    compartilhar.
+                </p>
+                <div class="badge">Até 6 variáveis com números complexos</div>
+            </section>
+
+            <section class="card controls">
+                <div>
+                    <label for="size">Quantas variáveis/equações?</label>
+                    <input id="size" type="number" min="1" max="6" value="3" />
+                </div>
+                <button id="generate" class="btn-ghost">
+                    Atualizar campos
+                </button>
+            </section>
+
+            <section class="card grid" aria-live="polite">
+                <h2>Matriz A e vetor b</h2>
+                <p
+                    style="
+                        margin: 0 0 12px;
+                        color: var(--muted);
+                        font-size: 0.9rem;
+                    "
+                >
+                    Use valores como 3+4j, -1.5 ou 2i. Campos vazios contam como
+                    zero.
+                </p>
+                <div id="matrixContainer"></div>
+            </section>
+
+            <section class="card actions">
+                <div>
+                    <label for="unit">Unidade padrão</label>
+                    <select id="unit">
+                        <option value=" V">Volts (V)</option>
+                        <option value=" A" selected>Amperes (A)</option>
+                        <option value=" Ω">Ohms (Ω)</option>
+                    </select>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="autoCopy" />
+                    Copiar resultado automaticamente
+                </label>
+                <div class="floating-bar">
+                    <button id="solveBtn" class="btn-accent">Resolver</button>
+                    <button id="clearBtn" class="btn-ghost">Limpar</button>
+                </div>
+            </section>
+
+            <section class="card output">
+                <div id="statusChip" class="status">
+                    Configure o sistema e toque em Resolver.
+                </div>
+                <textarea id="output" readonly></textarea>
+                <div class="out-actions">
+                    <button id="copyNow" class="btn-ghost">
+                        Copiar resultado
+                    </button>
+                    <button id="downloadBtn" class="btn-ghost">
+                        Baixar .txt
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/mathjs@13.0.0/lib/browser/math.min.js"></script>
+        <script>
+            const sizeInput = document.getElementById("size");
+            const matrixContainer = document.getElementById("matrixContainer");
+            const solveBtn = document.getElementById("solveBtn");
+            const generateBtn = document.getElementById("generate");
+            const clearBtn = document.getElementById("clearBtn");
+            const autoCopy = document.getElementById("autoCopy");
+            const output = document.getElementById("output");
+            const statusChip = document.getElementById("statusChip");
+            const unitSelect = document.getElementById("unit");
+            const copyNow = document.getElementById("copyNow");
+            const downloadBtn = document.getElementById("downloadBtn");
+
+            function updateStatus(message, tone = "info") {
+                const tones = {
+                    info: "rgba(15,118,110,0.15)",
+                    success: "rgba(16,185,129,0.18)",
+                    warning: "rgba(249,115,22,0.18)",
+                    danger: "rgba(239,68,68,0.2)",
+                };
+                const colors = {
+                    info: "#5eead4",
+                    success: "#34d399",
+                    warning: "#fb923c",
+                    danger: "#f87171",
+                };
+                statusChip.textContent = message;
+                statusChip.style.background = tones[tone] || tones.info;
+                statusChip.style.color = colors[tone] || colors.info;
+            }
+
+            function buildMatrix() {
+                const n = Number(sizeInput.value) || 1;
+                matrixContainer.innerHTML = "";
+                for (let row = 0; row < n; row++) {
+                    const rowEl = document.createElement("div");
+                    rowEl.className = "matrix-row";
+                    for (let col = 0; col < n; col++) {
+                        const input = document.createElement("input");
+                        input.type = "text";
+                        input.placeholder = `A${row + 1},${col + 1}`;
+                        input.dataset.row = row;
+                        input.dataset.col = col;
+                        input.className = "input-a";
+                        rowEl.appendChild(input);
+                    }
+                    const rhs = document.createElement("input");
+                    rhs.type = "text";
+                    rhs.placeholder = `b${row + 1}`;
+                    rhs.dataset.row = row;
+                    rhs.className = "input-b";
+                    rowEl.appendChild(rhs);
+                    matrixContainer.appendChild(rowEl);
+                }
+                updateStatus(
+                    "Campos atualizados. Insira os coeficientes ⚡",
+                    "info",
+                );
+            }
+
+            function parseComplexValue(value) {
+                const sanitized = (value || "").trim();
+                if (!sanitized) return math.complex(0);
+                return math.complex(sanitized.replaceAll("j", "i"));
+            }
+
+            function solveSystem() {
+                try {
+                    const n = Number(sizeInput.value);
+                    if (!n || n < 1)
+                        throw new Error("Informe uma dimensão válida.");
+
+                    const matrix = [];
+                    const vector = [];
+
+                    for (let row = 0; row < n; row++) {
+                        const rowValues = [];
+                        for (let col = 0; col < n; col++) {
+                            const field = matrixContainer.querySelector(
+                                `.input-a[data-row="${row}"][data-col="${col}"]`,
+                            );
+                            rowValues.push(
+                                parseComplexValue(field?.value || "0"),
+                            );
+                        }
+                        matrix.push(rowValues);
+                        const rhsField = matrixContainer.querySelector(
+                            `.input-b[data-row="${row}"]`,
+                        );
+                        vector.push(parseComplexValue(rhsField?.value || "0"));
+                    }
+
+                    let solutions;
+                    let determinantSteps = "";
+
+                    if (n <= 3) {
+                        const { solutions: detSolutions, trace } =
+                            solveWithDeterminants(matrix, vector);
+                        solutions = detSolutions;
+                        determinantSteps = trace;
+                    } else {
+                        const rawResult = math.squeeze(
+                            math.lusolve(matrix, vector),
+                        );
+                        solutions = normalizeResultArray(rawResult);
+                    }
+
+                    const unidade = unitSelect.value;
+
+                    let txt = "Resultados:\n\n";
+                    solutions.forEach((value, index) => {
+                        txt += `x${index + 1} = ${formatComplex(value)}${unidade}\n`;
+                    });
+                    if (determinantSteps) {
+                        txt += `\nResolução via determinantes:\n\n${determinantSteps}`;
+                    }
+
+                    output.value = txt;
+                    updateStatus("Sistema resolvido com sucesso ✨", "success");
+
+                    if (autoCopy.checked) {
+                        navigator.clipboard.writeText(txt).catch(() => {});
+                    }
+                } catch (error) {
+                    updateStatus(error.message || "Erro inesperado.", "danger");
+                }
+            }
+
+            function formatComplex(value) {
+                const complexValue =
+                    value !== undefined ? math.complex(value) : math.complex(0);
+                const real = math.round(complexValue.re || 0, 4);
+                const imag = math.round(complexValue.im || 0, 4);
+                if (Math.abs(imag) < 1e-9) {
+                    return real.toString();
+                }
+                const signal = imag >= 0 ? " + " : " - ";
+                return `${real}${signal}${Math.abs(imag)}j`;
+            }
+
+            function normalizeResultArray(result) {
+                if (Array.isArray(result)) return result;
+                if (typeof result?.toArray === "function") {
+                    return result.toArray();
+                }
+                return [result];
+            }
+
+            function formatMatrixDisplay(values) {
+                return values
+                    .map(
+                        (row) =>
+                            `| ${row.map((cell) => formatComplex(cell)).join("   ")} |`,
+                    )
+                    .join("\n");
+            }
+
+            function solveWithDeterminants(matrix, vector) {
+                const determinant = math.det(matrix);
+                const magnitude = math.abs(math.complex(determinant));
+                if (magnitude < 1e-9) {
+                    throw new Error(
+                        "Determinante igual a zero. Sistema sem solução única.",
+                    );
+                }
+
+                const steps = [
+                    "Determinante principal (D):",
+                    formatMatrixDisplay(matrix),
+                    `D = ${formatComplex(determinant)}`,
+                    "",
+                ];
+
+                const solutions = [];
+                for (let col = 0; col < matrix.length; col++) {
+                    const replaced = matrix.map((row, rowIndex) =>
+                        row.map((value, colIndex) =>
+                            colIndex === col ? vector[rowIndex] : value,
+                        ),
+                    );
+                    const detCurrent = math.det(replaced);
+                    const variableValue = math.divide(detCurrent, determinant);
+
+                    steps.push(`Determinante D${col + 1}:`);
+                    steps.push(formatMatrixDisplay(replaced));
+                    steps.push(`D${col + 1} = ${formatComplex(detCurrent)}`);
+                    steps.push(
+                        `x${col + 1} = D${col + 1} / D = ${formatComplex(
+                            detCurrent,
+                        )} / ${formatComplex(determinant)} = ${formatComplex(variableValue)}`,
+                    );
+                    steps.push("");
+                    solutions.push(variableValue);
+                }
+
+                return { solutions, trace: steps.join("\n") };
+            }
+
+            function clearAll() {
+                matrixContainer.querySelectorAll("input").forEach((input) => {
+                    input.value = "";
+                });
+                output.value = "";
+                updateStatus("Tudo limpo. Bora montar outro circuito.", "info");
+            }
+
+            function copyResult() {
+                const text = output.value.trim();
+                if (!text) {
+                    updateStatus("Nenhum resultado para copiar.", "warning");
+                    return;
+                }
+                navigator.clipboard.writeText(text).then(
+                    () => updateStatus("Resultado copiado 📋", "success"),
+                    () => updateStatus("Não foi possível copiar.", "warning"),
+                );
+            }
+
+            function downloadResult() {
+                const text = output.value.trim();
+                if (!text) {
+                    updateStatus("Resolva algo antes de exportar.", "warning");
+                    return;
+                }
+                const blob = new Blob([text], {
+                    type: "text/plain;charset=utf-8",
+                });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "resultado_sistema.txt";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                updateStatus("Arquivo salvo com sucesso.", "success");
+            }
+
+            generateBtn.addEventListener("click", buildMatrix);
+            solveBtn.addEventListener("click", solveSystem);
+            clearBtn.addEventListener("click", clearAll);
+            copyNow.addEventListener("click", copyResult);
+            downloadBtn.addEventListener("click", downloadResult);
+
+            buildMatrix();
+        </script>
+    </body>
+</html>
